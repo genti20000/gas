@@ -10,19 +10,25 @@ import Battery from './components/Battery';
 import Testimonials from './components/Testimonials';
 import Footer from './components/Footer';
 import DrinksMenu from './components/DrinksMenu';
-import ImageEditor from './components/ImageEditor';
 import Chatbot from './components/Chatbot';
 import WhatsAppButton from './components/WhatsAppButton';
 import AdminDashboard from './components/AdminDashboard';
+import InfoSection from './components/InfoSection';
+import FAQ from './components/FAQ';
 import { DataProvider } from './context/DataContext';
 
-type Page = 'home' | 'menu' | 'drinks' | 'imageEditor' | 'admin';
+type Page = 'home' | 'menu' | 'drinks' | 'admin';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('home');
 
-  const navigateTo = (page: Page) => {
-    setCurrentPage(page);
+  const navigateTo = (page: any) => {
+    // If imageEditor is requested (legacy), redirect to home
+    if (page === 'imageEditor') {
+        setCurrentPage('home');
+    } else {
+        setCurrentPage(page);
+    }
     window.scrollTo(0, 0);
   };
 
@@ -39,11 +45,12 @@ const App: React.FC = () => {
               <Fitness />
               <Battery />
               <Testimonials />
+              <InfoSection />
+              <FAQ />
             </>
           )}
           {currentPage === 'menu' && <Menu />}
           {currentPage === 'drinks' && <DrinksMenu />}
-          {currentPage === 'imageEditor' && <ImageEditor />}
           {currentPage === 'admin' && <AdminDashboard />}
         </main>
         {currentPage !== 'admin' && <Footer onNavigate={navigateTo} />}

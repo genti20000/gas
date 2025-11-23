@@ -29,7 +29,6 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li><a href="#" className="hover:text-white">Song Book</a></li>
               <li><button onClick={() => onNavigate('menu')} className="bg-transparent p-0 text-gray-400 hover:text-white text-left">Food Menu</button></li>
               <li><button onClick={() => onNavigate('drinks')} className="bg-transparent p-0 text-gray-400 hover:text-white text-left">Drinks Menu</button></li>
-              <li><button onClick={() => onNavigate('imageEditor')} className="bg-transparent p-0 text-gray-400 hover:text-white text-left">AI Image Magic</button></li>
             </ul>
           </div>
           <div>

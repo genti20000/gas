@@ -9,15 +9,15 @@ interface HeaderProps {
 // Pilot Wings Badge Icon (Stacked Lines - Long to Short)
 // Wider version to match the "Book Now" button width
 const MenuIcon = () => (
-  <svg className="w-24 h-8 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" viewBox="0 0 80 24" fill="currentColor">
+  <svg className="w-28 h-8 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" viewBox="0 0 100 24" fill="currentColor">
     {/* Line 1 - Longest */}
-    <rect x="0" y="4" width="80" height="3" rx="1.5" />
+    <rect x="0" y="4" width="100" height="3" rx="1.5" />
     {/* Line 2 */}
-    <rect x="10" y="9" width="60" height="3" rx="1.5" />
+    <rect x="12" y="9" width="76" height="3" rx="1.5" />
     {/* Line 3 */}
-    <rect x="20" y="14" width="40" height="3" rx="1.5" />
+    <rect x="24" y="14" width="52" height="3" rx="1.5" />
     {/* Line 4 - Shortest */}
-    <rect x="30" y="19" width="20" height="3" rx="1.5" />
+    <rect x="36" y="19" width="28" height="3" rx="1.5" />
   </svg>
 );
 
@@ -38,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-md">
+    <header className="sticky top-0 z-50 bg-black shadow-2xl border-b border-zinc-900">
       <style>{`
         @keyframes wing-enter-left {
           0% { opacity: 0; transform: translateX(-50px) skewX(-15deg) scale(0.9); }
@@ -53,17 +53,17 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           100% { opacity: 1; transform: translateY(0); }
         }
         .animate-wing-left {
-          animation: wing-enter-left 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          animation: wing-enter-left 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
         .animate-wing-right {
-          animation: wing-enter-right 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+          animation: wing-enter-right 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
         }
         .animate-item-stagger-1 {
-          animation: item-slide-up 0.5s ease-out 0.2s forwards;
+          animation: item-slide-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.3s forwards;
           opacity: 0;
         }
         .animate-item-stagger-2 {
-          animation: item-slide-up 0.5s ease-out 0.3s forwards;
+          animation: item-slide-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.4s forwards;
           opacity: 0;
         }
       `}</style>
@@ -74,18 +74,18 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             {/* Mobile Menu Button */}
             <button 
                 onClick={() => setIsMenuOpen(!isMenuOpen)} 
-                className="md:hidden z-50 p-1 mr-2 focus:outline-none transition-all duration-300 ease-out hover:scale-105"
+                className="md:hidden z-50 p-1 mr-2 focus:outline-none group"
             >
-                <div className={`transition-transform duration-300 ${isMenuOpen ? 'rotate-90 scale-110' : 'rotate-0'}`}>
+                <div className={`transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isMenuOpen ? 'rotate-180 scale-110' : 'rotate-0 group-hover:scale-105'}`}>
                     {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
                 </div>
             </button>
 
             {/* Desktop Left Nav */}
             <div className="hidden md:flex items-center space-x-6">
-                <a href="#" className="text-sm text-gray-300 hover:text-white font-medium tracking-wide">Our Rooms</a>
-                <button onClick={() => onNavigate('menu')} className="text-sm text-gray-300 hover:text-white bg-transparent border-none p-0 font-medium tracking-wide">Food Menu</button>
-                <button onClick={() => onNavigate('drinks')} className="text-sm text-gray-300 hover:text-white bg-transparent border-none p-0 font-medium tracking-wide">Drinks Menu</button>
+                <a href="#" className="text-sm text-gray-300 hover:text-white font-medium tracking-wide transition-colors">Our Rooms</a>
+                <button onClick={() => onNavigate('menu')} className="text-sm text-gray-300 hover:text-white bg-transparent border-none p-0 font-medium tracking-wide transition-colors">Food Menu</button>
+                <button onClick={() => onNavigate('drinks')} className="text-sm text-gray-300 hover:text-white bg-transparent border-none p-0 font-medium tracking-wide transition-colors">Drinks Menu</button>
             </div>
         </div>
 
@@ -106,8 +106,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
         <div className="flex justify-end items-center">
              {/* Desktop Right Nav */}
             <div className="hidden md:flex items-center space-x-6">
-                <button onClick={() => onNavigate('imageEditor')} className="text-sm text-gray-300 hover:text-white bg-transparent border-none p-0 font-medium tracking-wide">AI Image Magic</button>
-                <button className="glitter-button bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-bold py-2 px-6 rounded-full border-2 border-white transition-transform duration-300 ease-in-out hover:scale-105 shadow-[0_0_15px_rgba(250,204,21,0.4)]">
+                <button className="bg-yellow-400 hover:bg-yellow-500 text-black text-sm font-bold py-2 px-6 rounded-full border-2 border-white transition-transform duration-300 ease-in-out hover:scale-105 shadow-[0_0_15px_rgba(250,204,21,0.4)]">
                     Book Now
                 </button>
             </div>
@@ -125,7 +124,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
       {isMenuOpen && (
         <div className="md:hidden fixed top-[80px] left-0 w-full h-[calc(100vh-80px)] pointer-events-none overflow-hidden z-40">
             {/* Overlay */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto" onClick={() => setIsMenuOpen(false)}></div>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm pointer-events-auto transition-opacity duration-500" onClick={() => setIsMenuOpen(false)}></div>
             
             <div className="relative w-full px-4 pt-8 flex justify-between gap-4 pointer-events-none">
                 {/* Left Wing */}
@@ -137,7 +136,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
                 {/* Right Wing */}
                 <div className="w-1/2 bg-gradient-to-bl from-zinc-900 to-purple-900 border-2 border-white rounded-tr-2xl rounded-tl-sm rounded-br-[60px] rounded-bl-3xl p-6 shadow-[0_0_30px_rgba(147,51,234,0.6)] flex flex-col items-center gap-8 animate-wing-right origin-top-left pointer-events-auto">
                     <button onClick={() => handleMobileNav('drinks')} className="text-xl font-black tracking-wider text-gray-100 hover:text-pink-400 transition-colors border-b-2 border-transparent hover:border-pink-500 pb-1 animate-item-stagger-1">DRINKS MENU</button>
-                    <button onClick={() => handleMobileNav('imageEditor')} className="text-xl font-black tracking-wider text-gray-100 hover:text-pink-400 transition-colors border-b-2 border-transparent hover:border-pink-500 pb-1 animate-item-stagger-2">AI STUDIO</button>
+                    <button className="text-xl font-black tracking-wider text-yellow-400 hover:text-yellow-300 transition-colors border-b-2 border-transparent hover:border-yellow-400 pb-1 animate-item-stagger-2">BOOK NOW</button>
                 </div>
             </div>
             
