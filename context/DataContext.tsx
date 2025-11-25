@@ -36,6 +36,7 @@ export interface HeaderData {
 
 export interface HeroData {
     backgroundImageUrl: string;
+    slides: string[]; 
     badgeText: string;
     headingText: string;
     subText: string;
@@ -148,6 +149,21 @@ const INITIAL_HEADER_DATA: HeaderData = {
 
 const INITIAL_HERO_DATA: HeroData = {
     backgroundImageUrl: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1024,fit=crop/m7V3XokxQ0Hbg2KE/london-karaoke-club-header-mv0WRlry1ahM56NV.png",
+    slides: [
+        "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1024,fit=crop/m7V3XokxQ0Hbg2KE/london-karaoke-club-header-mv0WRlry1ahM56NV.png",
+        "https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=1920&auto=format&fit=crop", // Father Xmas / Festive Singing
+        "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=1920&auto=format&fit=crop", // Karaoke Vibe
+        "https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=1920&auto=format&fit=crop", // Neon Club / Party Vibe
+        "https://images.unsplash.com/photo-1576692828388-75e921867175?q=80&w=1920&auto=format&fit=crop", // Festive Sparklers Celebration
+        "https://images.unsplash.com/photo-1516450360452-631d408d8495?q=80&w=1920", // Vibrant neon night out
+        "https://images.unsplash.com/photo-1519834785169-98be25ec3f84?q=80&w=1920", // Festive bokeh celebration
+        "https://images.unsplash.com/photo-1513297887119-d46091b24bfa?q=80&w=1920", // Christmas Party Crowd
+        "https://images.unsplash.com/photo-1572013822606-25805c87707e?q=80&w=1920", // Festive Drinks
+        "https://images.unsplash.com/photo-1516919549054-e08258825f80?q=80&w=1920", // Concert/crowd
+        "https://images.unsplash.com/photo-1506157786151-c8c3bc666f40?q=80&w=1920", // Music festival vibe
+        "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=1920", // Energetic party crowd
+        "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1920" // Confetti party
+    ],
     badgeText: "London's Premier Karaoke Club",
     headingText: "Unleash Your Inner Star",
     subText: "Private luxury suites, premium cocktails, and over 80,000 songs. The stage is yours.",
@@ -273,6 +289,19 @@ const INITIAL_FOOD_MENU: MenuCategory[] = [
     items: [
       { name: 'Vanilla Cheesecake (GF)', description: 'With wild berries compote & fresh fruit', price: '8.5' },
       { name: 'Truffon Chocolate (GF)', description: 'Raspberry purée, exotic fruit, pistachio crumble', price: '8.5' },
+    ],
+  },
+  {
+    category: 'Small Plates',
+    items: [
+      { name: 'Octopus Roll', description: 'Guacamole, brioche bread, spicy mayonnaise', price: '25' },
+      { name: 'Mediterranean Platter (V)', description: 'Grilled pita, feta, olives, hummus, red pepper & aubergine relish', price: '11', note: 'Vegan option available' },
+      { name: 'Tomato, Basil & Mozzarella Bruschetta (V)', description: 'Toasted bread, fresh tomatoes, mozzarella, basil pesto, olive oil', price: '11' },
+      { name: 'Calamari', description: 'Lightly buttered salt and pepper squid, served with tartar sauce', price: '14' },
+      { name: 'Black Angus Beef Carpaccio (GF)', description: 'Black Angus beef, wild rocket, pomegranate seeds, gherkins, carrots, truffle mayo', price: '18' },
+      { name: 'Tempura Prawn Tacos', description: 'Guacamole, cherry tomato, pickled red onions, lime, avocado, tempura prawn', price: '15' },
+      { name: 'Baked Prawns', description: 'King prawns, tomato sauce, garlic, chilli, parsley, olive oil, homemade bread', price: '18' },
+      { name: 'Baked Camembert (V)', description: 'Camembert cheese, walnut, honey, rosemary, truffle, homemade bread', price: '16' },
     ],
   },
 ];

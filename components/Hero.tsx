@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 
@@ -23,7 +22,7 @@ const SnowflakeIcon: React.FC<{ className?: string }> = ({ className }) => (
     <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M17 12L21.41 16.41L20 17.83L16.17 14H14V16.17L17.83 20L16.41 21.41L12 17L7.59 21.41L6.17 20L10 16.17V14H7.83L4 17.83L2.59 16.41L7 12L2.59 7.59L4 6.17L7.83 10H10V7.83L6.17 4L7.59 2.59L12 7L16.41 2.59L17.83 4L14 7.83V10H16.17L20 6.17L21.41 7.59L17 12Z"/></svg>
 );
 const GiftIcon: React.FC<{ className?: string }> = ({ className }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v4c0 1.11.89 2 2 2v5c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2v-5c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15h-4v-2h4v2zm-6-5H8v-2h6v2zm-5 5H5v-2h4v2zm5-8v-2h4v2h-4zm-1-2V6c0-.55.45-1 1-1h1v3h-2zm-4 0h-2V5h1c.55 0 1 .45 1 1v2zm-1 2v2H4V8h4z"/></svg>
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-2 .89-2 2v4c0 1.11.89 2 2 2v5c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2v-5c1.11 0 2-.89 2-2v-5c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15h-4v-2h4v2zm-6-5H8v-2h6v2zm-5 5H5v-2h4v2zm5-8v-2h4v2h-4zm-1-2V6c0-.55.45-1 1-1h1v3h-2zm-4 0h-2V5h1c.55 0 1 .45 1 1v2zm-1 2v2H4V8h4z"/></svg>
 );
 
 const particleElements = [
@@ -87,17 +86,33 @@ const snowflakes = Array.from({ length: 50 }).map((_, i) => {
 const Hero: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
   const { heroData } = useData();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  
+  const BOOKING_URL = "https://squareup.com/appointments/book/aijx16oiq683tl/LCK48B0G6CF51/services";
+
+  // Use slides if available, otherwise fallback to backgroundImageUrl
+  const slides = heroData.slides && heroData.slides.length > 0 ? heroData.slides : [heroData.backgroundImageUrl];
 
   useEffect(() => {
     const handleScroll = () => {
+      // Use requestAnimationFrame for smoother updates if needed, but direct state update is usually fine for simple parallax
       setScrollY(window.scrollY);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Slideshow Logic
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000); // 5 seconds per slide
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
   return (
-    <section className="relative h-screen flex flex-col items-center justify-end pb-24 md:pb-32 text-center text-white overflow-hidden">
+    <section className="relative h-screen flex flex-col items-center justify-end pb-8 md:pb-12 text-center text-white overflow-hidden bg-black">
       <style>{`
         @keyframes fade-in-scale {
           0% { opacity: 0; transform: scale(0.95); }
@@ -113,12 +128,23 @@ const Hero: React.FC = () => {
         }
       `}</style>
       
-      <div className="absolute inset-0 z-0" style={{ transform: `translateY(${scrollY * 0.5}px) scale(1.1)` }}>
-        <img 
-          src={heroData.backgroundImageUrl}
-          alt="Neon Karaoke Singer"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
+      {/* Background with Enhanced Parallax 
+          - Increased height to 140% and top offset to -20% to allow for larger movement without gaps.
+          - Adjusted translate factor to 0.3 for a subtle 'slower than foreground' effect.
+      */}
+      <div 
+        className="absolute w-full h-[140%] -top-[20%] left-0 z-0 will-change-transform" 
+        style={{ transform: `translateY(${scrollY * 0.3}px) scale(1.1)` }}
+      >
+        {slides.map((slide, index) => (
+             <img 
+                key={index}
+                src={slide}
+                alt={`Hero Slide ${index + 1}`}
+                // Using object-[center_20%] ensures faces (usually in upper 3rd) are preserved on mobile.
+                className={`absolute inset-0 w-full h-full object-cover object-[center_20%] transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+             />
+        ))}
         {/* Dark overlay with slight wintery tint */}
         <div className="absolute inset-0 bg-black/30"></div>
         {/* Stronger bottom gradient to text readability */}
@@ -147,19 +173,19 @@ const Hero: React.FC = () => {
 
       <div className="relative z-10 p-6 max-w-5xl mx-auto">
         <div className="mb-4 inline-block">
-           <span className="py-1 px-4 rounded-full bg-red-600/80 backdrop-blur-sm border border-red-400 text-white text-sm font-bold tracking-wider uppercase animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.6)]">
+           <span className="py-1 px-4 rounded-full bg-red-600/80 backdrop-blur-sm border border-red-400 text-white text-xs md:text-sm font-bold tracking-wider uppercase animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.6)]">
              🎄 {heroData.badgeText} 🎄
            </span>
         </div>
-        <h2 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-tight animate-fade-in-scale text-transparent bg-clip-text bg-gradient-to-r from-white via-red-200 to-green-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+        <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight leading-tight animate-fade-in-scale text-transparent bg-clip-text bg-gradient-to-r from-white via-red-200 to-green-100 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
           {heroData.headingText}
-        </h2>
-        <p className="mt-4 text-lg md:text-2xl max-w-2xl mx-auto text-gray-200 animate-fade-in-up drop-shadow-md" style={{ animationDelay: '0.5s' }}>
+        </h1>
+        <p className="mt-4 text-sm md:text-lg max-w-2xl mx-auto text-gray-200 animate-fade-in-up drop-shadow-md" style={{ animationDelay: '0.5s' }}>
           {heroData.subText}
         </p>
-        <button className="mt-8 bg-red-600 hover:bg-red-700 text-white text-lg font-bold py-3 px-8 rounded-full border-2 border-white transition-transform duration-300 ease-in-out hover:scale-105 animate-fade-in-up shadow-[0_0_20px_rgba(220,38,38,0.5)]" style={{ animationDelay: '0.8s' }}>
+        <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="inline-block mt-6 bg-red-600 hover:bg-red-700 text-white text-base font-bold py-2 px-6 rounded-full border-2 border-white transition-transform duration-300 ease-in-out hover:scale-105 animate-fade-in-up shadow-[0_0_20px_rgba(220,38,38,0.5)]" style={{ animationDelay: '0.8s' }}>
           {heroData.buttonText}
-        </button>
+        </a>
       </div>
     </section>
   );

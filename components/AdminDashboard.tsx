@@ -17,6 +17,97 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
 
 type AdminTab = 'header' | 'hero' | 'highlights' | 'features' | 'vibe' | 'testimonials' | 'food' | 'drinks' | 'battery' | 'footer';
 
+// Reusable Components
+const SectionCard: React.FC<{ title: string; description: string; children: React.ReactNode }> = ({ title, description, children }) => (
+  <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-lg">
+    <div className="mb-6 border-b border-zinc-800 pb-4">
+      <h3 className="text-xl font-bold text-white">{title}</h3>
+      <p className="text-sm text-gray-400 mt-1">{description}</p>
+    </div>
+    {children}
+  </div>
+);
+
+const InputGroup: React.FC<{ label: string; value: string; onChange: (val: string) => void; type?: 'text' | 'textarea' }> = ({ label, value, onChange, type = 'text' }) => (
+  <div className="mb-4">
+    <label className="block text-sm font-semibold text-gray-300 mb-2">{label}</label>
+    {type === 'textarea' ? (
+      <textarea 
+        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white focus:border-yellow-400 outline-none transition-colors min-h-[100px]"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    ) : (
+      <input 
+        type="text"
+        className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-3 text-sm text-white focus:border-yellow-400 outline-none transition-colors"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+    )}
+  </div>
+);
+
+const ImageUploader: React.FC<{ onUpload: (base64: string) => void; label?: string }> = ({ onUpload, label = "Upload Image" }) => {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // Increased limit to 10MB
+            if (file.size > 10 * 1024 * 1024) {
+                alert("File too large (max 10MB)");
+                return;
+            }
+            try {
+                const base64 = await blobToBase64(file);
+                onUpload(base64);
+            } catch (err) {
+                console.error(err);
+                alert("Failed to upload image");
+            }
+        }
+    };
+
+    return (
+        <div>
+            <button 
+                onClick={() => fileInputRef.current?.click()}
+                className="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs py-2 px-3 rounded border border-zinc-600 transition-colors"
+            >
+                {label}
+            </button>
+            <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleFileChange} 
+                className="hidden" 
+                accept="image/*"
+            />
+        </div>
+    );
+};
+
+const ImageField: React.FC<{ url: string; onUpdate: (url: string) => void }> = ({ url, onUpdate }) => (
+    <div className="flex gap-4 items-center bg-zinc-950/30 p-3 rounded-lg border border-zinc-800/50">
+        <div className="w-16 h-16 bg-black rounded overflow-hidden flex-shrink-0 border border-zinc-700">
+            <img src={url} alt="Preview" className="w-full h-full object-cover" />
+        </div>
+        <div className="flex-1 space-y-2">
+            <input 
+                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-xs text-gray-300 focus:border-yellow-400 outline-none"
+                value={url}
+                onChange={(e) => onUpdate(e.target.value)}
+                placeholder="Image URL"
+            />
+            <div className="flex justify-end">
+                <ImageUploader onUpload={onUpdate} label="Upload File" />
+            </div>
+        </div>
+    </div>
+);
+
+
 const AdminDashboard: React.FC<AdminDashboardProps> = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [password, setPassword] = useState('');
@@ -39,6 +130,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
   // AI Generation State for Hero
   const [generatedBackgrounds, setGeneratedBackgrounds] = useState<string[]>([]);
   const [isGeneratingBackgrounds, setIsGeneratingBackgrounds] = useState(false);
+  
+  // Save State
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,9 +143,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
       setError('Incorrect password');
     }
   };
+  
+  const handleSave = () => {
+    setSaveStatus('saving');
+    // Simulate saving delay for user feedback (Data is already synced via Context/LocalStorage)
+    setTimeout(() => {
+      setSaveStatus('saved');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    }, 800);
+  };
 
   // --- Handlers ---
-  const handleHeroChange = (field: string, value: string) => {
+  const handleHeroChange = (field: string, value: any) => {
       updateHeroData({ ...heroData, [field]: value });
   };
 
@@ -77,15 +180,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
       newMenu[catIndex].items.splice(itemIndex, 1);
       updateFoodMenu(newMenu);
   }
-
-  const handleCocktailChange = (catIndex: number, itemIndex: number, field: string, value: string) => {
-      const newDrinks = { ...drinksData };
-      newDrinks.cocktailsData[catIndex].items[itemIndex] = { 
-          ...newDrinks.cocktailsData[catIndex].items[itemIndex], 
-          [field]: value 
-      };
-      updateDrinksData(newDrinks);
-  };
 
   const handleGenerateBackgrounds = async () => {
     setIsGeneratingBackgrounds(true);
@@ -113,12 +207,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                 });
                 
                 // Find image part
-                let found = false;
                 if (response.candidates?.[0]?.content?.parts) {
                     for (const part of response.candidates[0].content.parts) {
                         if (part.inlineData) {
                             newImages.push(`data:image/png;base64,${part.inlineData.data}`);
-                            found = true;
                             break;
                         }
                     }
@@ -141,6 +233,25 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
         setIsGeneratingBackgrounds(false);
     }
   };
+
+  const handleAddSlide = () => {
+      const currentSlides = heroData.slides || [heroData.backgroundImageUrl];
+      handleHeroChange('slides', [...currentSlides, 'https://picsum.photos/seed/newslide/1600/900']);
+  };
+
+  const handleRemoveSlide = (index: number) => {
+      const currentSlides = heroData.slides || [heroData.backgroundImageUrl];
+      const newSlides = [...currentSlides];
+      newSlides.splice(index, 1);
+      handleHeroChange('slides', newSlides);
+  };
+
+  const handleUpdateSlide = (index: number, value: string) => {
+      const currentSlides = heroData.slides || [heroData.backgroundImageUrl];
+      const newSlides = [...currentSlides];
+      newSlides[index] = value;
+      handleHeroChange('slides', newSlides);
+  }
 
 
   if (!isAuthenticated) {
@@ -177,12 +288,39 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white pb-24">
-      <div className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40">
+      <div className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40 shadow-lg">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-yellow-400">LKC Backend</h2>
-          <div className="flex gap-4">
+          <div className="flex gap-4 items-center">
+             <button 
+                onClick={handleSave} 
+                disabled={saveStatus === 'saving'}
+                className={`text-sm font-bold py-2 px-6 rounded-full transition-all flex items-center gap-2 shadow-md ${
+                    saveStatus === 'saved' 
+                    ? 'bg-green-500 text-white cursor-default' 
+                    : 'bg-yellow-400 hover:bg-yellow-500 text-black hover:scale-105'
+                }`}
+             >
+                {saveStatus === 'saving' && (
+                    <svg className="animate-spin h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                )}
+                {saveStatus === 'saved' && (
+                    <svg className="h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                    </svg>
+                )}
+                {saveStatus === 'idle' && 'Save All Changes'}
+                {saveStatus === 'saving' && 'Saving...'}
+                {saveStatus === 'saved' && 'Saved Successfully'}
+             </button>
+             
+             <div className="h-6 w-px bg-zinc-700 mx-2"></div>
+
              <button onClick={resetToDefaults} className="text-xs text-red-400 hover:text-red-300 underline">
-                Reset All Data
+                Reset Data
             </button>
             <button onClick={() => setIsAuthenticated(false)} className="text-sm text-gray-400 hover:text-white">
                 Logout
@@ -224,22 +362,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                      <InputGroup label="Subtext" value={heroData.subText} onChange={(v) => handleHeroChange('subText', v)} type="textarea" />
                      
                      <div className="border-t border-zinc-800 pt-6">
-                        <label className="block text-sm font-semibold text-gray-300 mb-2">Background Image</label>
-                        <div className="flex gap-4 items-center">
-                            <img src={heroData.backgroundImageUrl} className="w-32 h-20 object-cover rounded border border-zinc-700" />
-                            <div className="flex-1">
-                                <input 
-                                    className="w-full bg-zinc-800 border border-zinc-700 rounded px-4 py-2 text-sm focus:border-yellow-400 outline-none mb-2"
-                                    value={heroData.backgroundImageUrl}
-                                    onChange={(e) => handleHeroChange('backgroundImageUrl', e.target.value)}
-                                    placeholder="Image URL..."
-                                />
-                                <ImageUploader onUpload={(base64) => handleHeroChange('backgroundImageUrl', base64)} />
-                            </div>
+                        <label className="block text-sm font-semibold text-gray-300 mb-4">Hero Slideshow Images</label>
+                        
+                        <div className="space-y-4 mb-4">
+                            {(heroData.slides || [heroData.backgroundImageUrl]).map((slide, index) => (
+                                <div key={index} className="flex gap-4 items-start bg-zinc-950/50 p-2 rounded border border-zinc-800">
+                                    <div className="text-xs text-gray-500 py-2 w-6 text-center">{index + 1}</div>
+                                    <div className="flex-1">
+                                        <ImageField url={slide} onUpdate={(v) => handleUpdateSlide(index, v)} />
+                                    </div>
+                                    <button onClick={() => handleRemoveSlide(index)} className="text-red-500 hover:bg-red-900/20 p-2 rounded self-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            ))}
                         </div>
+                        
+                        <button 
+                            onClick={handleAddSlide}
+                            className="w-full py-2 border-2 border-dashed border-zinc-700 rounded text-gray-400 hover:border-yellow-400 hover:text-yellow-400 text-sm font-semibold"
+                        >
+                            + Add New Slide
+                        </button>
+
 
                         {/* AI Background Generator */}
-                        <div className="mt-6 bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
+                        <div className="mt-8 bg-zinc-950/50 p-4 rounded-lg border border-zinc-800">
                              <div className="flex justify-between items-center mb-4">
                                 <div>
                                     <h4 className="text-sm font-bold text-yellow-400">AI Background Suggestions</h4>
@@ -262,18 +412,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                              {generatedBackgrounds.length > 0 && (
                                  <div className="grid grid-cols-3 gap-4">
                                      {generatedBackgrounds.map((bg, idx) => (
-                                         <div key={idx} className="group relative cursor-pointer" onClick={() => handleHeroChange('backgroundImageUrl', bg)}>
+                                         <div key={idx} className="group relative cursor-pointer" onClick={() => {
+                                             // Add as a new slide
+                                             const currentSlides = heroData.slides || [heroData.backgroundImageUrl];
+                                             handleHeroChange('slides', [...currentSlides, bg]);
+                                         }}>
                                              <img src={bg} className="w-full h-24 object-cover rounded border-2 border-transparent group-hover:border-yellow-400 transition-all" />
                                              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded">
-                                                 <span className="text-xs font-bold text-white">Use Image</span>
+                                                 <span className="text-xs font-bold text-white">Add as Slide</span>
                                              </div>
                                          </div>
                                      ))}
-                                 </div>
-                             )}
-                             {generatedBackgrounds.length === 0 && !isGeneratingBackgrounds && (
-                                 <div className="text-center py-6 border-2 border-dashed border-zinc-800 rounded">
-                                     <p className="text-xs text-gray-500">No suggestions generated yet.</p>
                                  </div>
                              )}
                         </div>
@@ -333,12 +482,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                              <div key={idx} className="bg-zinc-800 p-4 rounded border border-zinc-700">
                                  <p className="text-xs text-gray-500 mb-2">Card {idx + 1}</p>
                                  <div className="space-y-2">
-                                     <input className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm" value={item.title} onChange={(e) => {
+                                     <input className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm text-white" value={item.title} onChange={(e) => {
                                          const newItems = [...featuresData.occasions.items];
                                          newItems[idx].title = e.target.value;
                                          updateFeaturesData({...featuresData, occasions: {...featuresData.occasions, items: newItems}});
                                      }} />
-                                     <textarea className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm" rows={3} value={item.text} onChange={(e) => {
+                                     <textarea className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm text-white" rows={3} value={item.text} onChange={(e) => {
                                          const newItems = [...featuresData.occasions.items];
                                          newItems[idx].text = e.target.value;
                                          updateFeaturesData({...featuresData, occasions: {...featuresData.occasions, items: newItems}});
@@ -355,12 +504,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                         {featuresData.grid.items.map((item, idx) => (
                              <div key={idx} className="bg-zinc-800 p-4 rounded border border-zinc-700 flex gap-4 flex-col md:flex-row">
                                  <div className="flex-1 space-y-3">
-                                     <input className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm font-bold" value={item.title} onChange={(e) => {
+                                     <input className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm font-bold text-white" value={item.title} onChange={(e) => {
                                          const newItems = [...featuresData.grid.items];
                                          newItems[idx].title = e.target.value;
                                          updateFeaturesData({...featuresData, grid: {...featuresData.grid, items: newItems}});
                                      }} />
-                                     <textarea className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm" rows={2} value={item.description} onChange={(e) => {
+                                     <textarea className="w-full bg-zinc-900 border border-zinc-700 rounded px-2 py-1 text-sm text-white" rows={2} value={item.description} onChange={(e) => {
                                          const newItems = [...featuresData.grid.items];
                                          newItems[idx].description = e.target.value;
                                          updateFeaturesData({...featuresData, grid: {...featuresData.grid, items: newItems}});
@@ -482,7 +631,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     <div className="md:col-span-3">
                                         <label className="text-xs text-gray-500 block mb-1">Item Name</label>
                                         <input 
-                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none"
+                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none text-white"
                                             value={item.name}
                                             onChange={(e) => handleFoodChange(catIndex, itemIndex, 'name', e.target.value)}
                                         />
@@ -490,7 +639,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     <div className="md:col-span-6">
                                         <label className="text-xs text-gray-500 block mb-1">Description</label>
                                         <textarea 
-                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none"
+                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none text-white"
                                             rows={2}
                                             value={item.description}
                                             onChange={(e) => handleFoodChange(catIndex, itemIndex, 'description', e.target.value)}
@@ -499,7 +648,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                     <div className="md:col-span-2">
                                         <label className="text-xs text-gray-500 block mb-1">Price (£)</label>
                                         <input 
-                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none"
+                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none text-white"
                                             value={item.price}
                                             onChange={(e) => handleFoodChange(catIndex, itemIndex, 'price', e.target.value)}
                                         />
@@ -533,150 +682,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
                  <SectionCard title="Menu Header" description="">
                      <label className="block text-sm font-semibold text-gray-300 mb-2">Header Image</label>
-                     <ImageField url={drinksData.headerImageUrl || ''} onUpdate={(v) => updateDrinksData({...drinksData, headerImageUrl: v})} />
+                     <ImageField url={drinksData.headerImageUrl} onUpdate={(v) => updateDrinksData({...drinksData, headerImageUrl: v})} />
                  </SectionCard>
-
-                {drinksData.cocktailsData.map((category: any, catIndex: number) => (
-                    <SectionCard key={category.category} title={category.category} description="">
-                        <div className="space-y-4">
-                             {category.items.map((item: any, itemIndex: number) => (
-                                <div key={itemIndex} className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start bg-zinc-950/50 p-4 rounded-lg">
-                                    <div className="md:col-span-3">
-                                        <label className="text-xs text-gray-500 block mb-1">Name</label>
-                                        <input 
-                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none"
-                                            value={item.name}
-                                            onChange={(e) => handleCocktailChange(catIndex, itemIndex, 'name', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-7">
-                                        <label className="text-xs text-gray-500 block mb-1">Description</label>
-                                        <textarea 
-                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none"
-                                            rows={2}
-                                            value={item.description || ''}
-                                            onChange={(e) => handleCocktailChange(catIndex, itemIndex, 'description', e.target.value)}
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="text-xs text-gray-500 block mb-1">Price (£)</label>
-                                        <input 
-                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none"
-                                            value={item.price}
-                                            onChange={(e) => handleCocktailChange(catIndex, itemIndex, 'price', e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                             ))}
-                        </div>
-                    </SectionCard>
-                ))}
              </div>
         )}
+
       </div>
     </div>
   );
-};
-
-// --- Reusable Sub-components ---
-
-const SectionCard: React.FC<{ title: string, description: string, children: React.ReactNode }> = ({ title, description, children }) => (
-    <div className="bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800">
-        <div className="bg-zinc-800/50 p-4 border-b border-zinc-800">
-            <h3 className="text-lg font-bold text-yellow-400">{title}</h3>
-            {description && <p className="text-xs text-gray-400">{description}</p>}
-        </div>
-        <div className="p-6">
-            {children}
-        </div>
-    </div>
-);
-
-const InputGroup: React.FC<{ label: string, value: string, onChange: (v: string) => void, type?: 'text' | 'textarea' }> = ({ label, value, onChange, type = 'text' }) => (
-    <div className="mb-4">
-        <label className="block text-sm font-semibold text-gray-300 mb-2">{label}</label>
-        {type === 'textarea' ? (
-            <textarea 
-                className="w-full bg-zinc-800 border border-zinc-700 rounded px-4 py-3 text-sm focus:border-yellow-400 outline-none"
-                rows={3}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-            />
-        ) : (
-            <input 
-                className="w-full bg-zinc-800 border border-zinc-700 rounded px-4 py-3 text-sm focus:border-yellow-400 outline-none"
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-            />
-        )}
-    </div>
-);
-
-const ImageField: React.FC<{ url: string, onUpdate: (url: string) => void }> = ({ url, onUpdate }) => (
-    <div className="flex gap-4 items-start">
-        <img src={url} className="w-24 h-24 object-cover rounded border border-zinc-700 bg-black" />
-        <div className="flex-1">
-            <input 
-                className="w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm focus:border-yellow-400 outline-none mb-2"
-                value={url}
-                onChange={(e) => onUpdate(e.target.value)}
-                placeholder="Image URL..."
-            />
-            <ImageUploader onUpload={onUpdate} />
-        </div>
-    </div>
-);
-
-const ImageUploader: React.FC<{ onUpload: (base64: string) => void; label?: string }> = ({ onUpload, label = "Upload Image" }) => {
-    const inputRef = useRef<HTMLInputElement>(null);
-    const [isUploading, setIsUploading] = useState(false);
-
-    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        
-        if (file.size > 4 * 1024 * 1024) {
-            alert("File is too large. Maximum size is 4MB.");
-            return;
-        }
-
-        setIsUploading(true);
-        try {
-            const base64 = await blobToBase64(file);
-            onUpload(base64);
-        } catch (error) {
-            console.error("Upload failed", error);
-            alert("Failed to process image.");
-        } finally {
-            setIsUploading(false);
-        }
-    };
-
-    return (
-        <div>
-            <input 
-                type="file" 
-                ref={inputRef} 
-                className="hidden" 
-                accept="image/*" 
-                onChange={handleFileChange} 
-            />
-            <button 
-                onClick={() => inputRef.current?.click()}
-                disabled={isUploading}
-                className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white text-xs py-2 px-4 rounded flex items-center gap-2 transition-colors shadow-sm"
-            >
-                 {isUploading ? (
-                    <span className="block w-3 h-3 rounded-full border-2 border-white border-t-transparent animate-spin"></span>
-                 ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                    </svg>
-                 )}
-                 {isUploading ? 'Processing...' : label}
-            </button>
-        </div>
-    );
 };
 
 export default AdminDashboard;
