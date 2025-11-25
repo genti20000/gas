@@ -117,6 +117,18 @@ export interface FooterData {
   ctaButtonText: string;
 }
 
+export interface GalleryItem {
+  id: string;
+  url: string;
+  caption: string;
+}
+
+export interface GalleryData {
+  heading: string;
+  subtext: string;
+  images: GalleryItem[];
+}
+
 interface DataContextType {
   foodMenu: MenuCategory[];
   updateFoodMenu: (newMenu: MenuCategory[]) => void;
@@ -138,6 +150,8 @@ interface DataContextType {
   updateBatteryData: (newData: BatteryData) => void;
   footerData: FooterData;
   updateFooterData: (newData: FooterData) => void;
+  galleryData: GalleryData;
+  updateGalleryData: (newData: GalleryData) => void;
   resetToDefaults: () => void;
 }
 
@@ -241,6 +255,20 @@ const INITIAL_FOOTER_DATA: FooterData = {
   ctaHeading: "Ready for your spotlight moment?",
   ctaText: "Book your private karaoke room today and get ready for a night of unforgettable performances.",
   ctaButtonText: "Book a Room"
+};
+
+const INITIAL_GALLERY_DATA: GalleryData = {
+  heading: "Moments & Memories",
+  subtext: "A glimpse into the electric atmosphere at London Karaoke Club. From epic solos to group hugs, this is where the magic happens.",
+  images: [
+    { id: '1', url: "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=1000", caption: "Main Stage Vibes" },
+    { id: '2', url: "https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=1000", caption: "Neon Nights" },
+    { id: '3', url: "https://images.unsplash.com/photo-1572013822606-25805c87707e?q=80&w=1000", caption: "Signature Cocktails" },
+    { id: '4', url: "https://images.unsplash.com/photo-1525268323886-2818bc24d2bd?q=80&w=1000", caption: "Friends Having Fun" },
+    { id: '5', url: "https://images.unsplash.com/photo-1506157786151-c8c3bc666f40?q=80&w=1000", caption: "Live the Moment" },
+    { id: '6', url: "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1000", caption: "Party Time" },
+    { id: '7', url: "https://images.unsplash.com/photo-1576692828388-75e921867175?q=80&w=1000", caption: "Sparklers" }
+  ]
 };
 
 const INITIAL_FOOD_MENU: MenuCategory[] = [
@@ -394,6 +422,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [testimonialsData, setTestimonialsData] = useState<TestimonialsData>(INITIAL_TESTIMONIALS_DATA);
   const [batteryData, setBatteryData] = useState<BatteryData>(INITIAL_BATTERY_DATA);
   const [footerData, setFooterData] = useState<FooterData>(INITIAL_FOOTER_DATA);
+  const [galleryData, setGalleryData] = useState<GalleryData>(INITIAL_GALLERY_DATA);
 
   // Load from LocalStorage on mount
   useEffect(() => {
@@ -414,6 +443,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     load('lkc_testimonialsData', setTestimonialsData);
     load('lkc_batteryData', setBatteryData);
     load('lkc_footerData', setFooterData);
+    load('lkc_galleryData', setGalleryData);
   }, []);
 
   // Save to LocalStorage whenever state changes
@@ -427,6 +457,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => { localStorage.setItem('lkc_testimonialsData', JSON.stringify(testimonialsData)); }, [testimonialsData]);
   useEffect(() => { localStorage.setItem('lkc_batteryData', JSON.stringify(batteryData)); }, [batteryData]);
   useEffect(() => { localStorage.setItem('lkc_footerData', JSON.stringify(footerData)); }, [footerData]);
+  useEffect(() => { localStorage.setItem('lkc_galleryData', JSON.stringify(galleryData)); }, [galleryData]);
 
   const updateFoodMenu = (newMenu: MenuCategory[]) => setFoodMenu(newMenu);
   const updateDrinksData = (newData: any) => setDrinksData(newData);
@@ -438,6 +469,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const updateTestimonialsData = (newData: TestimonialsData) => setTestimonialsData(newData);
   const updateBatteryData = (newData: BatteryData) => setBatteryData(newData);
   const updateFooterData = (newData: FooterData) => setFooterData(newData);
+  const updateGalleryData = (newData: GalleryData) => setGalleryData(newData);
 
   const resetToDefaults = () => {
     if (confirm("Are you sure you want to reset all content to default? This cannot be undone.")) {
@@ -451,6 +483,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setTestimonialsData(INITIAL_TESTIMONIALS_DATA);
         setBatteryData(INITIAL_BATTERY_DATA);
         setFooterData(INITIAL_FOOTER_DATA);
+        setGalleryData(INITIAL_GALLERY_DATA);
         
         localStorage.removeItem('lkc_foodMenu');
         localStorage.removeItem('lkc_drinksData');
@@ -462,6 +495,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         localStorage.removeItem('lkc_testimonialsData');
         localStorage.removeItem('lkc_batteryData');
         localStorage.removeItem('lkc_footerData');
+        localStorage.removeItem('lkc_galleryData');
     }
   };
 
@@ -477,6 +511,7 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         testimonialsData, updateTestimonialsData,
         batteryData, updateBatteryData,
         footerData, updateFooterData,
+        galleryData, updateGalleryData,
         resetToDefaults 
     }}>
       {children}

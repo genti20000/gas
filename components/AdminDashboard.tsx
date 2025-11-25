@@ -15,7 +15,7 @@ const blobToBase64 = (blob: Blob): Promise<string> => {
   });
 };
 
-type AdminTab = 'header' | 'hero' | 'highlights' | 'features' | 'vibe' | 'testimonials' | 'food' | 'drinks' | 'battery' | 'footer';
+type AdminTab = 'header' | 'hero' | 'highlights' | 'features' | 'vibe' | 'testimonials' | 'food' | 'drinks' | 'gallery' | 'battery' | 'footer';
 
 // Reusable Components
 const SectionCard: React.FC<{ title: string; description: string; children: React.ReactNode }> = ({ title, description, children }) => (
@@ -54,9 +54,8 @@ const ImageUploader: React.FC<{ onUpload: (base64: string) => void; label?: stri
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
-            // Increased limit to 10MB
-            if (file.size > 10 * 1024 * 1024) {
-                alert("File too large (max 10MB)");
+            if (file.size > 4 * 1024 * 1024) {
+                alert("File too large (max 4MB)");
                 return;
             }
             try {
@@ -123,6 +122,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
     testimonialsData, updateTestimonialsData,
     batteryData, updateBatteryData,
     footerData, updateFooterData,
+    galleryData, updateGalleryData,
     resetToDefaults 
   } = useData();
   const [activeTab, setActiveTab] = useState<AdminTab>('header');
@@ -253,6 +253,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
       handleHeroChange('slides', newSlides);
   }
 
+  const handleAddGalleryImage = () => {
+      const newImages = [...galleryData.images, { id: Date.now().toString(), url: 'https://picsum.photos/seed/new/800/800', caption: 'New Image' }];
+      updateGalleryData({ ...galleryData, images: newImages });
+  }
+
+  const handleDeleteGalleryImage = (index: number) => {
+      if(!confirm("Remove this image?")) return;
+      const newImages = [...galleryData.images];
+      newImages.splice(index, 1);
+      updateGalleryData({ ...galleryData, images: newImages });
+  }
+
 
   if (!isAuthenticated) {
     return (
@@ -328,7 +340,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
           </div>
         </div>
         <div className="container mx-auto px-6 flex gap-6 text-sm font-semibold overflow-x-auto no-scrollbar">
-             {['header', 'hero', 'highlights', 'features', 'vibe', 'testimonials', 'food', 'drinks', 'battery', 'footer'].map((tab) => (
+             {['header', 'hero', 'highlights', 'features', 'vibe', 'gallery', 'testimonials', 'food', 'drinks', 'battery', 'footer'].map((tab) => (
                  <button 
                     key={tab}
                     onClick={() => setActiveTab(tab as AdminTab)}
@@ -557,6 +569,49 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                      </div>
                  </SectionCard>
             </div>
+        )}
+        
+        {activeTab === 'gallery' && (
+             <div className="space-y-8">
+                <SectionCard title="Gallery Page" description="Manage your photo gallery.">
+                     <InputGroup label="Page Heading" value={galleryData.heading} onChange={(v) => updateGalleryData({...galleryData, heading: v})} />
+                     <InputGroup label="Subtext" value={galleryData.subtext} onChange={(v) => updateGalleryData({...galleryData, subtext: v})} type="textarea" />
+                     
+                     <div className="border-t border-zinc-800 pt-6 mt-6">
+                         <div className="flex justify-between items-center mb-6">
+                             <h4 className="text-sm font-bold text-gray-300">Images ({galleryData.images.length})</h4>
+                             <button onClick={handleAddGalleryImage} className="text-xs bg-yellow-400 text-black px-3 py-1.5 rounded font-bold hover:bg-yellow-500 transition-colors">+ Add Image</button>
+                         </div>
+                         
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                             {galleryData.images.map((img, idx) => (
+                                 <div key={img.id} className="bg-zinc-950/50 p-3 rounded border border-zinc-800 flex gap-4">
+                                     <div className="w-24 h-24 flex-shrink-0">
+                                          <ImageField url={img.url} onUpdate={(v) => {
+                                              const newImages = [...galleryData.images];
+                                              newImages[idx].url = v;
+                                              updateGalleryData({...galleryData, images: newImages});
+                                          }} />
+                                     </div>
+                                     <div className="flex-1 space-y-2">
+                                         <input 
+                                            className="w-full bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-sm text-white" 
+                                            placeholder="Caption"
+                                            value={img.caption}
+                                            onChange={(e) => {
+                                              const newImages = [...galleryData.images];
+                                              newImages[idx].caption = e.target.value;
+                                              updateGalleryData({...galleryData, images: newImages});
+                                            }}
+                                         />
+                                         <button onClick={() => handleDeleteGalleryImage(idx)} className="text-xs text-red-500 underline hover:text-red-400">Remove</button>
+                                     </div>
+                                 </div>
+                             ))}
+                         </div>
+                     </div>
+                </SectionCard>
+             </div>
         )}
 
         {activeTab === 'testimonials' && (

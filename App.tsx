@@ -15,9 +15,10 @@ import AdminDashboard from './components/AdminDashboard';
 import InfoSection from './components/InfoSection';
 import FAQ from './components/FAQ';
 import Terms from './components/Terms';
+import Gallery from './components/Gallery';
 import { DataProvider } from './context/DataContext';
 
-type Page = 'home' | 'menu' | 'drinks' | 'admin' | 'terms';
+type Page = 'home' | 'menu' | 'drinks' | 'gallery' | 'admin' | 'terms';
 
 const PageBorder: React.FC = () => (
   <div className="fixed inset-0 z-[100] pointer-events-none overflow-hidden">
@@ -92,6 +93,7 @@ const App: React.FC = () => {
           )}
           {currentPage === 'menu' && <Menu />}
           {currentPage === 'drinks' && <DrinksMenu />}
+          {currentPage === 'gallery' && <Gallery />}
           {currentPage === 'admin' && <AdminDashboard />}
           {currentPage === 'terms' && <Terms />}
         </main>

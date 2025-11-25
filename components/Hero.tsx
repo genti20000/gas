@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 
 // Icon Components
@@ -104,28 +103,16 @@ const Hero: React.FC = () => {
   }, []);
 
   // Slideshow Logic
-  const nextSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev + 1) % slides.length);
-  }, [slides.length]);
-
-  const prevSlide = useCallback(() => {
-    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
-  }, [slides.length]);
-
-  const goToSlide = (index: number) => {
-    setCurrentSlide(index);
-  };
-
   useEffect(() => {
     if (slides.length <= 1) return;
     const interval = setInterval(() => {
-      nextSlide();
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 5000); // 5 seconds per slide
     return () => clearInterval(interval);
-  }, [slides.length, nextSlide]);
+  }, [slides.length]);
 
   return (
-    <section className="relative h-screen flex flex-col items-center justify-end pb-8 md:pb-12 text-center text-white overflow-hidden bg-black group">
+    <section className="relative h-screen flex flex-col items-center justify-end pb-8 md:pb-12 text-center text-white overflow-hidden bg-black">
       <style>{`
         @keyframes fade-in-scale {
           0% { opacity: 0; transform: scale(0.95); }
@@ -184,50 +171,7 @@ const Hero: React.FC = () => {
         ))}
       </div>
 
-      {/* Navigation Controls */}
-      {slides.length > 1 && (
-        <>
-          {/* Left Arrow */}
-          <button 
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/30 hover:bg-black/60 text-white rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:scale-110"
-            aria-label="Previous Slide"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-
-          {/* Right Arrow */}
-          <button 
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-2 bg-black/30 hover:bg-black/60 text-white rounded-full transition-all duration-300 opacity-0 group-hover:opacity-100 focus:opacity-100 hover:scale-110"
-            aria-label="Next Slide"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          {/* Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-3">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => goToSlide(index)}
-                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
-                  index === currentSlide 
-                    ? 'bg-white w-6 shadow-[0_0_8px_rgba(255,255,255,0.8)]' 
-                    : 'bg-white/40 hover:bg-white/70'
-                }`}
-                aria-label={`Go to slide ${index + 1}`}
-              />
-            ))}
-          </div>
-        </>
-      )}
-
-      <div className="relative z-10 p-6 max-w-5xl mx-auto mb-6">
+      <div className="relative z-10 p-6 max-w-5xl mx-auto">
         <div className="mb-4 inline-block">
            <span className="py-1 px-4 rounded-full bg-red-600/80 backdrop-blur-sm border border-red-400 text-white text-xs md:text-sm font-bold tracking-wider uppercase animate-pulse shadow-[0_0_15px_rgba(220,38,38,0.6)]">
              🎄 {heroData.badgeText} 🎄

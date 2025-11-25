@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 
 interface HeaderProps {
-  onNavigate: (page: 'home' | 'menu' | 'drinks' | 'imageEditor' | 'admin' | 'terms') => void;
+  onNavigate: (page: 'home' | 'menu' | 'drinks' | 'gallery' | 'imageEditor' | 'admin' | 'terms') => void;
 }
 
 // Compact Menu Icon for inside the button
@@ -25,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
   
   const BOOKING_URL = "https://squareup.com/appointments/book/aijx16oiq683tl/LCK48B0G6CF51/services";
 
-  const handleMobileNav = (page: 'home' | 'menu' | 'drinks' | 'imageEditor') => {
+  const handleMobileNav = (page: 'home' | 'menu' | 'drinks' | 'gallery' | 'imageEditor') => {
     onNavigate(page);
     setIsMenuOpen(false);
   }
@@ -75,6 +76,10 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
           animation: item-slide-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.5s forwards;
           opacity: 0;
         }
+        .animate-item-stagger-4 {
+          animation: item-slide-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) 0.6s forwards;
+          opacity: 0;
+        }
       `}</style>
       <div className="container mx-auto px-4 py-4 grid grid-cols-[1fr_auto_1fr] items-center">
         
@@ -111,6 +116,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             <div className="hidden md:flex items-center space-x-8">
                 <button onClick={() => onNavigate('menu')} className="text-sm font-bold text-gray-300 hover:text-white bg-transparent border-none p-0 tracking-widest transition-colors uppercase">Food Menu</button>
                 <button onClick={() => onNavigate('drinks')} className="text-sm font-bold text-gray-300 hover:text-white bg-transparent border-none p-0 tracking-widest transition-colors uppercase">Drinks Menu</button>
+                <button onClick={() => onNavigate('gallery')} className="text-sm font-bold text-gray-300 hover:text-white bg-transparent border-none p-0 tracking-widest transition-colors uppercase">Gallery</button>
                 <button onClick={handleScrollToFAQ} className="text-sm font-bold text-gray-300 hover:text-white bg-transparent border-none p-0 tracking-widest transition-colors uppercase">FAQs</button>
             </div>
 
@@ -135,13 +141,14 @@ const Header: React.FC<HeaderProps> = ({ onNavigate }) => {
             
             <div className="relative w-full px-4 pt-8 flex justify-between gap-4 pointer-events-none">
                 {/* Left Wing */}
-                <div className="w-1/2 bg-gradient-to-br from-zinc-900 to-purple-900 border-2 border-white rounded-tl-2xl rounded-tr-sm rounded-bl-[60px] rounded-br-3xl p-6 shadow-[0_0_30px_rgba(147,51,234,0.6)] flex flex-col items-center gap-8 animate-wing-left origin-top-right pointer-events-auto">
+                <div className="w-1/2 bg-gradient-to-br from-zinc-900 to-purple-900 border-2 border-white rounded-tl-2xl rounded-tr-sm rounded-bl-[60px] rounded-br-3xl p-6 shadow-[0_0_30px_rgba(147,51,234,0.6)] flex flex-col items-center gap-6 animate-wing-left origin-top-right pointer-events-auto">
                     <button onClick={() => handleMobileNav('menu')} className="text-xl font-black tracking-wider text-gray-100 hover:text-pink-400 transition-colors border-b-2 border-transparent hover:border-pink-500 pb-1 animate-item-stagger-1">FOOD MENU</button>
-                    <button onClick={handleScrollToFAQ} className="text-xl font-black tracking-wider text-gray-100 hover:text-pink-400 transition-colors border-b-2 border-transparent hover:border-pink-500 pb-1 animate-item-stagger-2">FAQs</button>
+                    <button onClick={() => handleMobileNav('gallery')} className="text-xl font-black tracking-wider text-gray-100 hover:text-pink-400 transition-colors border-b-2 border-transparent hover:border-pink-500 pb-1 animate-item-stagger-2">GALLERY</button>
+                    <button onClick={handleScrollToFAQ} className="text-xl font-black tracking-wider text-gray-100 hover:text-pink-400 transition-colors border-b-2 border-transparent hover:border-pink-500 pb-1 animate-item-stagger-3">FAQs</button>
                 </div>
 
                 {/* Right Wing */}
-                <div className="w-1/2 bg-gradient-to-bl from-zinc-900 to-purple-900 border-2 border-white rounded-tr-2xl rounded-tl-sm rounded-br-[60px] rounded-bl-3xl p-6 shadow-[0_0_30px_rgba(147,51,234,0.6)] flex flex-col items-center gap-8 animate-wing-right origin-top-left pointer-events-auto">
+                <div className="w-1/2 bg-gradient-to-bl from-zinc-900 to-purple-900 border-2 border-white rounded-tr-2xl rounded-tl-sm rounded-br-[60px] rounded-bl-3xl p-6 shadow-[0_0_30px_rgba(147,51,234,0.6)] flex flex-col items-center gap-6 animate-wing-right origin-top-left pointer-events-auto">
                     <button onClick={() => handleMobileNav('drinks')} className="text-xl font-black tracking-wider text-gray-100 hover:text-pink-400 transition-colors border-b-2 border-transparent hover:border-pink-500 pb-1 animate-item-stagger-1">DRINKS MENU</button>
                     <a href={BOOKING_URL} target="_blank" rel="noopener noreferrer" className="text-xl font-black tracking-wider text-yellow-400 hover:text-yellow-300 transition-colors border-b-2 border-transparent hover:border-yellow-400 pb-1 animate-item-stagger-2">BOOK NOW</a>
                 </div>

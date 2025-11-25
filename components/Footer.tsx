@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { useData } from '../context/DataContext';
 
 interface FooterProps {
-  onNavigate: (page: 'home' | 'menu' | 'drinks' | 'imageEditor' | 'admin' | 'terms') => void;
+  onNavigate: (page: 'home' | 'menu' | 'drinks' | 'gallery' | 'imageEditor' | 'admin' | 'terms') => void;
 }
 
 const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
@@ -25,7 +26,7 @@ const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <h5 className="font-bold text-white mb-4">Explore</h5>
             <ul className="space-y-2">
               <li><button onClick={() => onNavigate('home')} className="bg-transparent p-0 text-gray-400 hover:text-white text-left">Home</button></li>
-              <li><a href="#" className="hover:text-white">Song Book</a></li>
+              <li><button onClick={() => onNavigate('gallery')} className="bg-transparent p-0 text-gray-400 hover:text-white text-left">Gallery</button></li>
               <li><button onClick={() => onNavigate('menu')} className="bg-transparent p-0 text-gray-400 hover:text-white text-left">Food Menu</button></li>
               <li><button onClick={() => onNavigate('drinks')} className="bg-transparent p-0 text-gray-400 hover:text-white text-left">Drinks Menu</button></li>
             </ul>
