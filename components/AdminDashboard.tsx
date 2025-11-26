@@ -5,6 +5,38 @@ import { GoogleGenAI, Modality } from "@google/genai";
 
 interface AdminDashboardProps {}
 
+// Simulated "Uploads" folder content - Common assets used in the site
+const MEDIA_ASSETS = [
+    "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,fit=crop,q=95/m7V3XokxQ0Hbg2KE/new-YNq2gqz36OInJMrE.png",
+    "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1024,fit=crop/m7V3XokxQ0Hbg2KE/london-karaoke-club-header-mv0WRlry1ahM56NV.png",
+    "https://images.unsplash.com/photo-1543589077-47d81606c1bf?q=80&w=1920&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1516280440614-6697288d5d38?q=80&w=1920&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1514525253440-b393452e8d26?q=80&w=1920&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1576692828388-75e921867175?q=80&w=1920&auto=format&fit=crop",
+    "https://images.unsplash.com/photo-1516450360452-631d408d8495?q=80&w=1920",
+    "https://images.unsplash.com/photo-1519834785169-98be25ec3f84?q=80&w=1920",
+    "https://images.unsplash.com/photo-1513297887119-d46091b24bfa?q=80&w=1920",
+    "https://images.unsplash.com/photo-1572013822606-25805c87707e?q=80&w=1920",
+    "https://images.unsplash.com/photo-1516919549054-e08258825f80?q=80&w=1920",
+    "https://images.unsplash.com/photo-1506157786151-c8c3bc666f40?q=80&w=1920",
+    "https://images.unsplash.com/photo-1517457373958-b7bdd4587205?q=80&w=1920",
+    "https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?q=80&w=1920",
+    "https://picsum.photos/seed/singingfriends/1200/600",
+    "https://picsum.photos/seed/neonglowmic/400/400",
+    "https://picsum.photos/seed/stylishkaraoke/1400/800",
+    "https://picsum.photos/seed/digitalsongbook/400/500",
+    "https://picsum.photos/seed/neoncocktails/400/500",
+    "https://picsum.photos/seed/prosoundsystem/400/500",
+    "https://picsum.photos/seed/karaokegroup/600/600",
+    "https://picsum.photos/seed/partylights/600/600",
+    "https://picsum.photos/seed/makingmemories/1400/900",
+    "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+    "https://i.pravatar.cc/150?u=a042581f4e29026704e",
+    "https://i.pravatar.cc/150?u=a042581f4e29026704f",
+    "https://images.unsplash.com/photo-1525268323886-2818bc24d2bd?q=80&w=1000",
+    "https://picsum.photos/seed/barvibes/1600/800"
+];
+
 // Helper function for Base64 conversion
 const blobToBase64 = (blob: Blob): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -72,7 +104,7 @@ const ImageUploader: React.FC<{ onUpload: (base64: string) => void; label?: stri
         <div>
             <button 
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs py-2 px-3 rounded border border-zinc-600 transition-colors"
+                className="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs py-2 px-3 rounded border border-zinc-600 transition-colors whitespace-nowrap"
             >
                 {label}
             </button>
@@ -87,9 +119,9 @@ const ImageUploader: React.FC<{ onUpload: (base64: string) => void; label?: stri
     );
 };
 
-const ImageField: React.FC<{ url: string; onUpdate: (url: string) => void }> = ({ url, onUpdate }) => (
+const ImageField: React.FC<{ url: string; onUpdate: (url: string) => void; onOpenLibrary: () => void }> = ({ url, onUpdate, onOpenLibrary }) => (
     <div className="flex gap-4 items-center bg-zinc-950/30 p-3 rounded-lg border border-zinc-800/50">
-        <div className="w-16 h-16 bg-black rounded overflow-hidden flex-shrink-0 border border-zinc-700">
+        <div className="w-16 h-16 bg-black rounded overflow-hidden flex-shrink-0 border border-zinc-700 relative group">
             <img src={url} alt="Preview" className="w-full h-full object-cover" />
         </div>
         <div className="flex-1 space-y-2">
@@ -99,12 +131,57 @@ const ImageField: React.FC<{ url: string; onUpdate: (url: string) => void }> = (
                 onChange={(e) => onUpdate(e.target.value)}
                 placeholder="Image URL"
             />
-            <div className="flex justify-end">
-                <ImageUploader onUpload={onUpdate} label="Upload File" />
+            <div className="flex justify-end gap-2">
+                <button 
+                    onClick={onOpenLibrary}
+                    className="bg-zinc-800 hover:bg-zinc-700 text-gray-300 text-xs py-2 px-3 rounded border border-zinc-600 transition-colors flex items-center gap-2"
+                    title="Select from Uploads"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path d="M4 3a2 2 0 100 4h12a2 2 0 100-4H4z" /><path fillRule="evenodd" d="M3 8h14v7a2 2 0 01-2 2H5a2 2 0 01-2-2V8zm5 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" clipRule="evenodd" /></svg>
+                    Library
+                </button>
+                <ImageUploader onUpload={onUpdate} label="Upload New" />
             </div>
         </div>
     </div>
 );
+
+const MediaLibraryModal: React.FC<{ isOpen: boolean; onClose: () => void; onSelect: (url: string) => void }> = ({ isOpen, onClose, onSelect }) => {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in-up">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl max-h-[80vh] flex flex-col shadow-2xl">
+                <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
+                    <div>
+                        <h3 className="text-xl font-bold text-white">Media Library</h3>
+                        <p className="text-xs text-gray-500">Select from /uploads folder</p>
+                    </div>
+                    <button onClick={onClose} className="text-gray-400 hover:text-white p-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-6 bg-zinc-950/50">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {MEDIA_ASSETS.map((url, idx) => (
+                            <button 
+                                key={idx} 
+                                onClick={() => onSelect(url)}
+                                className="group relative aspect-square bg-black rounded-lg overflow-hidden border border-zinc-800 hover:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 transition-all"
+                            >
+                                <img src={url} alt={`Asset ${idx}`} className="w-full h-full object-cover opacity-70 group-hover:opacity-100 transition-opacity" />
+                                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/40 transition-opacity">
+                                    <span className="text-xs font-bold text-white bg-black/50 px-2 py-1 rounded">Select</span>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 
 const AdminDashboard: React.FC<AdminDashboardProps> = () => {
@@ -133,6 +210,23 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
   
   // Save State
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+
+  // Media Library State
+  const [isLibraryOpen, setIsLibraryOpen] = useState(false);
+  const [currentImageCallback, setCurrentImageCallback] = useState<((url: string) => void) | null>(null);
+
+  const openLibrary = (callback: (url: string) => void) => {
+      setCurrentImageCallback(() => callback);
+      setIsLibraryOpen(true);
+  };
+
+  const handleSelectFromLibrary = (url: string) => {
+      if (currentImageCallback) {
+          currentImageCallback(url);
+      }
+      setIsLibraryOpen(false);
+      setCurrentImageCallback(null);
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -300,6 +394,13 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white pb-24">
+      {/* Media Library Modal */}
+      <MediaLibraryModal 
+          isOpen={isLibraryOpen} 
+          onClose={() => setIsLibraryOpen(false)} 
+          onSelect={handleSelectFromLibrary} 
+      />
+
       <div className="bg-zinc-900 border-b border-zinc-800 sticky top-0 z-40 shadow-lg">
         <div className="container mx-auto px-6 py-4 flex justify-between items-center">
           <h2 className="text-xl font-bold text-yellow-400">LKC Backend</h2>
@@ -358,7 +459,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
             <div className="space-y-8">
                 <SectionCard title="Header Settings" description="Manage the site logo and header elements.">
                     <label className="block text-sm font-semibold text-gray-300 mb-2">Logo Image</label>
-                    <ImageField url={headerData.logoUrl} onUpdate={(v) => updateHeaderData({...headerData, logoUrl: v})} />
+                    <ImageField 
+                        url={headerData.logoUrl} 
+                        onUpdate={(v) => updateHeaderData({...headerData, logoUrl: v})} 
+                        onOpenLibrary={() => openLibrary((v) => updateHeaderData({...headerData, logoUrl: v}))}
+                    />
                 </SectionCard>
             </div>
         )}
@@ -381,7 +486,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                 <div key={index} className="flex gap-4 items-start bg-zinc-950/50 p-2 rounded border border-zinc-800">
                                     <div className="text-xs text-gray-500 py-2 w-6 text-center">{index + 1}</div>
                                     <div className="flex-1">
-                                        <ImageField url={slide} onUpdate={(v) => handleUpdateSlide(index, v)} />
+                                        <ImageField 
+                                            url={slide} 
+                                            onUpdate={(v) => handleUpdateSlide(index, v)} 
+                                            onOpenLibrary={() => openLibrary((v) => handleUpdateSlide(index, v))}
+                                        />
                                     </div>
                                     <button onClick={() => handleRemoveSlide(index)} className="text-red-500 hover:bg-red-900/20 p-2 rounded self-center">
                                         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -452,11 +561,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                     <div className="grid md:grid-cols-2 gap-8 mt-6">
                         <div>
                              <label className="block text-sm font-semibold text-gray-300 mb-2">Main Image</label>
-                             <ImageField url={highlightsData.mainImageUrl} onUpdate={(v) => handleHighlightsChange('mainImageUrl', v)} />
+                             <ImageField 
+                                url={highlightsData.mainImageUrl} 
+                                onUpdate={(v) => handleHighlightsChange('mainImageUrl', v)} 
+                                onOpenLibrary={() => openLibrary((v) => handleHighlightsChange('mainImageUrl', v))}
+                             />
                         </div>
                         <div>
                              <label className="block text-sm font-semibold text-gray-300 mb-2">Side Circle Image</label>
-                             <ImageField url={highlightsData.sideImageUrl} onUpdate={(v) => handleHighlightsChange('sideImageUrl', v)} />
+                             <ImageField 
+                                url={highlightsData.sideImageUrl} 
+                                onUpdate={(v) => handleHighlightsChange('sideImageUrl', v)} 
+                                onOpenLibrary={() => openLibrary((v) => handleHighlightsChange('sideImageUrl', v))}
+                             />
                         </div>
                     </div>
 
@@ -481,7 +598,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                      <InputGroup label="Text" value={featuresData.experience.text} onChange={(v) => updateFeaturesData({...featuresData, experience: {...featuresData.experience, text: v}})} type="textarea" />
                      <div className="mt-4">
                         <label className="block text-sm font-semibold text-gray-300 mb-2">Background Image</label>
-                        <ImageField url={featuresData.experience.image} onUpdate={(v) => updateFeaturesData({...featuresData, experience: {...featuresData.experience, image: v}})} />
+                        <ImageField 
+                            url={featuresData.experience.image} 
+                            onUpdate={(v) => updateFeaturesData({...featuresData, experience: {...featuresData.experience, image: v}})} 
+                            onOpenLibrary={() => openLibrary((v) => updateFeaturesData({...featuresData, experience: {...featuresData.experience, image: v}}))}
+                        />
                      </div>
                 </SectionCard>
 
@@ -528,11 +649,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                                      }} />
                                  </div>
                                  <div className="w-full md:w-48">
-                                     <ImageField url={item.image} onUpdate={(v) => {
-                                         const newItems = [...featuresData.grid.items];
-                                         newItems[idx].image = v;
-                                         updateFeaturesData({...featuresData, grid: {...featuresData.grid, items: newItems}});
-                                     }} />
+                                     <ImageField 
+                                        url={item.image} 
+                                        onUpdate={(v) => {
+                                            const newItems = [...featuresData.grid.items];
+                                            newItems[idx].image = v;
+                                            updateFeaturesData({...featuresData, grid: {...featuresData.grid, items: newItems}});
+                                        }} 
+                                        onOpenLibrary={() => openLibrary((v) => {
+                                            const newItems = [...featuresData.grid.items];
+                                            newItems[idx].image = v;
+                                            updateFeaturesData({...featuresData, grid: {...featuresData.grid, items: newItems}});
+                                        })}
+                                     />
                                  </div>
                              </div>
                         ))}
@@ -551,11 +680,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                      <div className="grid md:grid-cols-2 gap-6 mt-6">
                          <div>
                              <label className="block text-sm font-semibold text-gray-300 mb-2">Top Circle Image 1</label>
-                             <ImageField url={vibeData.image1} onUpdate={(v) => updateVibeData({...vibeData, image1: v})} />
+                             <ImageField 
+                                url={vibeData.image1} 
+                                onUpdate={(v) => updateVibeData({...vibeData, image1: v})} 
+                                onOpenLibrary={() => openLibrary((v) => updateVibeData({...vibeData, image1: v}))}
+                             />
                          </div>
                          <div>
                              <label className="block text-sm font-semibold text-gray-300 mb-2">Bottom Circle Image 2</label>
-                             <ImageField url={vibeData.image2} onUpdate={(v) => updateVibeData({...vibeData, image2: v})} />
+                             <ImageField 
+                                url={vibeData.image2} 
+                                onUpdate={(v) => updateVibeData({...vibeData, image2: v})} 
+                                onOpenLibrary={() => openLibrary((v) => updateVibeData({...vibeData, image2: v}))}
+                             />
                          </div>
                      </div>
                  </SectionCard>
@@ -565,7 +702,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                      <InputGroup label="Bottom Text" value={vibeData.bottomText} onChange={(v) => updateVibeData({...vibeData, bottomText: v})} type="textarea" />
                      <div className="mt-4">
                         <label className="block text-sm font-semibold text-gray-300 mb-2">Large Banner Image</label>
-                        <ImageField url={vibeData.bigImage} onUpdate={(v) => updateVibeData({...vibeData, bigImage: v})} />
+                        <ImageField 
+                            url={vibeData.bigImage} 
+                            onUpdate={(v) => updateVibeData({...vibeData, bigImage: v})} 
+                            onOpenLibrary={() => openLibrary((v) => updateVibeData({...vibeData, bigImage: v}))}
+                        />
                      </div>
                  </SectionCard>
             </div>
@@ -587,11 +728,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                              {galleryData.images.map((img, idx) => (
                                  <div key={img.id} className="bg-zinc-950/50 p-3 rounded border border-zinc-800 flex gap-4">
                                      <div className="w-24 h-24 flex-shrink-0">
-                                          <ImageField url={img.url} onUpdate={(v) => {
+                                          <ImageField 
+                                            url={img.url} 
+                                            onUpdate={(v) => {
                                               const newImages = [...galleryData.images];
                                               newImages[idx].url = v;
                                               updateGalleryData({...galleryData, images: newImages});
-                                          }} />
+                                            }} 
+                                            onOpenLibrary={() => openLibrary((v) => {
+                                                const newImages = [...galleryData.images];
+                                                newImages[idx].url = v;
+                                                updateGalleryData({...galleryData, images: newImages});
+                                            })}
+                                          />
                                      </div>
                                      <div className="flex-1 space-y-2">
                                          <input 
@@ -623,16 +772,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
                      <div className="grid gap-6 mt-6">
                          {testimonialsData.items.map((item, idx) => (
                              <div key={idx} className="bg-zinc-800 p-4 rounded border border-zinc-700 flex flex-col md:flex-row gap-6">
-                                 <div className="w-full md:w-24">
+                                 <div className="w-full md:w-32 flex flex-col gap-2">
                                      <div className="mb-2 text-xs text-gray-500">Avatar</div>
-                                     <div className="w-20 h-20 rounded-full overflow-hidden mb-2 border border-zinc-600">
+                                     <div className="w-20 h-20 rounded-full overflow-hidden mb-1 border border-zinc-600 self-start">
                                          <img src={item.avatar} className="w-full h-full object-cover" />
                                      </div>
-                                     <ImageUploader onUpload={(v) => {
-                                         const newItems = [...testimonialsData.items];
-                                         newItems[idx].avatar = v;
-                                         updateTestimonialsData({...testimonialsData, items: newItems});
-                                     }} label="Upload" />
+                                     <div className="flex flex-col gap-2">
+                                        <ImageUploader 
+                                            onUpload={(v) => {
+                                                const newItems = [...testimonialsData.items];
+                                                newItems[idx].avatar = v;
+                                                updateTestimonialsData({...testimonialsData, items: newItems});
+                                            }} 
+                                            label="Upload" 
+                                        />
+                                        <button 
+                                            onClick={() => openLibrary((v) => {
+                                                const newItems = [...testimonialsData.items];
+                                                newItems[idx].avatar = v;
+                                                updateTestimonialsData({...testimonialsData, items: newItems});
+                                            })} 
+                                            className="text-xs text-yellow-400 hover:text-yellow-300 underline text-left"
+                                        >
+                                            Select from /uploads
+                                        </button>
+                                     </div>
                                  </div>
                                  <div className="flex-1 space-y-3">
                                      <InputGroup label="Name" value={item.name} onChange={(v) => {
@@ -737,7 +901,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = () => {
 
                  <SectionCard title="Menu Header" description="">
                      <label className="block text-sm font-semibold text-gray-300 mb-2">Header Image</label>
-                     <ImageField url={drinksData.headerImageUrl} onUpdate={(v) => updateDrinksData({...drinksData, headerImageUrl: v})} />
+                     <ImageField 
+                        url={drinksData.headerImageUrl} 
+                        onUpdate={(v) => updateDrinksData({...drinksData, headerImageUrl: v})} 
+                        onOpenLibrary={() => openLibrary((v) => updateDrinksData({...drinksData, headerImageUrl: v}))}
+                    />
                  </SectionCard>
              </div>
         )}
