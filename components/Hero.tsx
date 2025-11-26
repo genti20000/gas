@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 
@@ -111,6 +112,8 @@ const Hero: React.FC = () => {
     return () => clearInterval(interval);
   }, [slides.length]);
 
+  const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)$/i.test(url);
+
   return (
     <section className="relative h-screen flex flex-col items-center justify-end pb-8 md:pb-12 text-center text-white overflow-hidden bg-black">
       <style>{`
@@ -136,15 +139,30 @@ const Hero: React.FC = () => {
         className="absolute w-full h-[140%] -top-[20%] left-0 z-0 will-change-transform" 
         style={{ transform: `translateY(${scrollY * 0.3}px) scale(1.1)` }}
       >
-        {slides.map((slide, index) => (
-             <img 
-                key={index}
-                src={slide}
-                alt={`Hero Slide ${index + 1}`}
-                // Using object-[center_20%] ensures faces (usually in upper 3rd) are preserved on mobile.
-                className={`absolute inset-0 w-full h-full object-cover object-[center_20%] transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
-             />
-        ))}
+        {slides.map((slide, index) => {
+             const isSlideVideo = isVideo(slide);
+             const commonClasses = `absolute inset-0 w-full h-full object-cover object-[center_20%] transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`;
+             
+             return isSlideVideo ? (
+                <video 
+                    key={index}
+                    src={slide}
+                    className={commonClasses}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                />
+             ) : (
+                 <img 
+                    key={index}
+                    src={slide}
+                    alt={`Hero Slide ${index + 1}`}
+                    // Using object-[center_20%] ensures faces (usually in upper 3rd) are preserved on mobile.
+                    className={commonClasses}
+                 />
+             );
+        })}
         {/* Dark overlay with slight wintery tint */}
         <div className="absolute inset-0 bg-black/30"></div>
         {/* Stronger bottom gradient to text readability */}
