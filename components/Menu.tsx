@@ -15,9 +15,9 @@ const Menu: React.FC = () => {
           </p>
         </div>
 
-        <div className="max-w-6xl mx-auto columns-1 md:columns-2 gap-10 space-y-10">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
           {foodMenu.map((category) => (
-            <div key={category.category} className="break-inside-avoid mb-10 bg-black/20 p-8 rounded-3xl border border-white/5 hover:border-white/10 transition-colors">
+            <div key={category.category} className="bg-black/20 p-8 rounded-3xl border border-white/5 hover:border-white/10 transition-colors h-full">
               <h4 className="text-2xl font-bold text-yellow-400 mb-2">{category.category}</h4>
               {category.description && <p className="text-sm text-gray-400 italic mb-6">{category.description}</p>}
               <ul className="space-y-6">

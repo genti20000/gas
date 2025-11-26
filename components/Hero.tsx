@@ -141,7 +141,8 @@ const Hero: React.FC = () => {
       >
         {slides.map((slide, index) => {
              const isSlideVideo = isVideo(slide);
-             const commonClasses = `absolute inset-0 w-full h-full object-cover object-[center_20%] transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`;
+             // Adjusted object-position for better mobile responsiveness (center) vs desktop (center 20%)
+             const commonClasses = `absolute inset-0 w-full h-full object-cover object-center md:object-[center_20%] transition-opacity duration-1000 ease-in-out ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`;
              
              return isSlideVideo ? (
                 <video 
@@ -158,7 +159,6 @@ const Hero: React.FC = () => {
                     key={index}
                     src={slide}
                     alt={`Hero Slide ${index + 1}`}
-                    // Using object-[center_20%] ensures faces (usually in upper 3rd) are preserved on mobile.
                     className={commonClasses}
                  />
              );
