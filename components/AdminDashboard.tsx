@@ -88,8 +88,10 @@ const ImageUploader: React.FC<{ onUpload: (base64: string) => void; label?: stri
 };
 
 const ImageField: React.FC<{ url: string; onUpdate: (url: string) => void }> = ({ url, onUpdate }) => {
-    const [mode, setMode] = useState<'url' | 'server'>('url');
     const SERVER_PATH = 'https://londonkaraoke.club/uploads/';
+    // Auto-detect if the URL is a server file to set the initial mode
+    const isServerFile = url.startsWith(SERVER_PATH);
+    const [mode, setMode] = useState<'url' | 'server'>(isServerFile ? 'server' : 'url');
     
     // Extract filename if url matches server path, otherwise empty
     const getFilename = (fullUrl: string) => {
